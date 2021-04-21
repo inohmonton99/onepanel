@@ -19,4 +19,4 @@ jobs:
         go-version: 1.15
       
     - name: Format
-      run: go fmt ./…
+      run: go fmt .
