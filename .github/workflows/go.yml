@@ -16,6 +16,6 @@ jobs:
         go-version: 1.15.6
       
     - name: Golang Formatter
-      uses: sladyn98/auto-go-format@master
+      uses: inohmonton99/auto-go-format@master
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
