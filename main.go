@@ -43,7 +43,6 @@ var (
 	recoveryFunc grpc_recovery.RecoveryHandlerFunc
 )
 func main() {
-	
 flag.Parse()
 
 	// stopCh is used to indicate when the RPC server should reload.
