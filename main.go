@@ -42,7 +42,6 @@ var (
 	httpPort     = flag.String("http-port", ":8888", "RPC Port")
 	recoveryFunc grpc_recovery.RecoveryHandlerFunc
 )
-
 func main() {
 flag.Parse()
 
