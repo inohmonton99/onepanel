@@ -275,6 +275,7 @@ func (c *Client) createWorkspace(namespace string, parameters []byte, workspace 
 			"workspace_template_id":      workspace.WorkspaceTemplate.ID,
 			"workspace_template_version": workspace.WorkspaceTemplate.Version,
 			"labels":                     workspace.Labels,
+			"capture_node":               workspace.CaptureNode,
 		}).
 		Suffix("RETURNING id, created_at").
 		RunWith(c.DB).
@@ -311,9 +312,9 @@ func (c *Client) addRuntimeFieldsToWorkspaceTemplate(t wfv1.Template, workspace 
 	if !ok {
 		return nil, errors.New("unable to type check statefulset manifest")
 	}
-	extraContainer := generateNodeCaptureContainer(workspace, config)
 
-	if extraContainer != nil {
+	if workspace.CaptureNode {
+		extraContainer := generateNodeCaptureContainer(workspace, config)
 		containers, ok := templateSpec["containers"].([]interface{})
 		if !ok {
 			return nil, errors.New("unable to type check statefulset manifest")
@@ -345,10 +346,11 @@ func (c *Client) addRuntimeFieldsToWorkspaceTemplate(t wfv1.Template, workspace 
 		}
 
 		env.AddDefaultEnvVarsToContainer(container)
-		env.PrependEnvVarToContainer(container, "ONEPANEL_API_URL", config["ONEPANEL_API_URL"])
+		env.PrependEnvVarToContainer(container, "ONEPANEL_API_URL", "onepanel-core.onepanel.svc.cluster.local")
 		env.PrependEnvVarToContainer(container, "ONEPANEL_FQDN", config["ONEPANEL_FQDN"])
 		env.PrependEnvVarToContainer(container, "ONEPANEL_DOMAIN", config["ONEPANEL_DOMAIN"])
 		env.PrependEnvVarToContainer(container, "ONEPANEL_PROVIDER", config["ONEPANEL_PROVIDER"])
+		env.PrependEnvVarToContainer(container, "ONEPANEL_SERVING_URL", "kfserving-models-web-app.kfserving-system.svc.cluster.local")
 		env.PrependEnvVarToContainer(container, "ONEPANEL_RESOURCE_NAMESPACE", "{{workflow.namespace}}")
 		env.PrependEnvVarToContainer(container, "ONEPANEL_RESOURCE_UID", "{{workflow.parameters.sys-uid}}")
 	}

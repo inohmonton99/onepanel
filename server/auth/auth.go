@@ -66,6 +66,10 @@ func getBearerToken(ctx context.Context) (*string, bool) {
 		return &t, true
 	}
 
+	for _, t := range md.Get("onepanel-access-token") {
+		return &t, true
+	}
+
 	log.WithFields(log.Fields{
 		"Method": "getBearerToken",
 	}).Error("Unable to get BearerToken:", md)
@@ -126,40 +130,56 @@ func IsAuthorized(c *v1.Client, namespace, verb, group, resource, name string) (
 }
 
 func verifyLogin(client *v1.Client, tokenRequest *api.GetAccessTokenRequest) (rawToken string, err error) {
-	accountsList, err := client.CoreV1().ServiceAccounts("onepanel").List(v1.ListOptions{})
+	namespaces := []*v1.Namespace{{
+		Name: "onepanel",
+	}}
+
+	additionalNamespaces, err := client.ListOnepanelEnabledNamespaces()
 	if err != nil {
 		return "", err
 	}
 
-	authTokenSecretName := ""
-	for _, serviceAccount := range accountsList.Items {
-		if serviceAccount.Name != tokenRequest.Username {
-			continue
+	namespaces = append(namespaces, additionalNamespaces...)
+
+	for _, namespace := range namespaces {
+		namespaceName := namespace.Name
+		accountsList, err := client.CoreV1().ServiceAccounts(namespaceName).List(v1.ListOptions{})
+		if err != nil {
+			return "", err
 		}
-		for _, secret := range serviceAccount.Secrets {
-			if strings.Contains(secret.Name, "-token-") {
-				authTokenSecretName = secret.Name
-				break
+
+		authTokenSecretName := ""
+		for _, serviceAccount := range accountsList.Items {
+			if serviceAccount.Name != tokenRequest.Username {
+				continue
+			}
+			for _, secret := range serviceAccount.Secrets {
+				if strings.Contains(secret.Name, "-token-") {
+					authTokenSecretName = secret.Name
+					break
+				}
 			}
 		}
-	}
-	if authTokenSecretName == "" {
-		return "", util.NewUserError(codes.InvalidArgument, fmt.Sprintf("unknown service account '%v'", tokenRequest.Username))
+		if authTokenSecretName == "" {
+			continue
+		}
+
+		secret, err := client.CoreV1().Secrets(namespaceName).Get(authTokenSecretName, v12.GetOptions{})
+		if err != nil {
+			return "", err
+		}
+
+		currentTokenBytes := md5.Sum(secret.Data["token"])
+		currentTokenString := hex.EncodeToString(currentTokenBytes[:])
+
+		if tokenRequest.Token != fmt.Sprintf("%s", currentTokenString) {
+			continue
+		}
+
+		return string(secret.Data["token"]), nil
 	}
 
-	secret, err := client.CoreV1().Secrets("onepanel").Get(authTokenSecretName, v12.GetOptions{})
-	if err != nil {
-		return "", err
-	}
-
-	currentTokenBytes := md5.Sum(secret.Data["token"])
-	currentTokenString := hex.EncodeToString(currentTokenBytes[:])
-
-	if tokenRequest.Token != fmt.Sprintf("%s", currentTokenString) {
-		return "", util.NewUserError(codes.InvalidArgument, "token doesn't match what's on record")
-	}
-
-	return string(secret.Data["token"]), nil
+	return "", util.NewUserError(codes.InvalidArgument, fmt.Sprintf("unknown username/token '%v'", tokenRequest.Username))
 }
 
 // UnaryInterceptor performs authentication checks.
@@ -259,7 +279,7 @@ func UnaryInterceptor(kubeConfig *v1.Config, db *v1.DB, sysConfig v1.SystemConfi
 					pieces := strings.Split(workspaceAndNamespace, "--")
 					if len(pieces) > 1 {
 						workspaceName := pieces[0]
-						namespace := pieces[1]
+						namespace := pieces[len(pieces)-1]
 
 						isAuthorizedRequest, ok := req.(*api.IsAuthorizedRequest)
 						if ok {

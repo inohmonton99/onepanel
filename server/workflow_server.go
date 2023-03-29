@@ -14,8 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sort"
-	"strings"
 	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -449,67 +447,6 @@ func (s *WorkflowServer) TerminateWorkflowExecution(ctx context.Context, req *ap
 	}
 
 	return &empty.Empty{}, nil
-}
-
-func (s *WorkflowServer) GetArtifact(ctx context.Context, req *api.GetArtifactRequest) (*api.ArtifactResponse, error) {
-	client := getClient(ctx)
-	allowed, err := auth.IsAuthorized(client, req.Namespace, "get", "argoproj.io", "workflows", req.Uid)
-	if err != nil || !allowed {
-		return nil, err
-	}
-
-	data, err := client.GetArtifact(req.Namespace, req.Uid, req.Key)
-	if err != nil {
-		return nil, err
-	}
-
-	return &api.ArtifactResponse{
-		Data: data,
-	}, nil
-}
-
-func (s *WorkflowServer) ListFiles(ctx context.Context, req *api.ListFilesRequest) (*api.ListFilesResponse, error) {
-	client := getClient(ctx)
-	allowed, err := auth.IsAuthorized(client, req.Namespace, "get", "argoproj.io", "workflows", req.Uid)
-	if err != nil || !allowed {
-		return nil, err
-	}
-
-	files, err := client.ListFiles(req.Namespace, req.Path)
-	if err != nil {
-		return nil, err
-	}
-
-	apiFiles := make([]*api.File, len(files))
-	for i, file := range files {
-		apiFiles[i] = &api.File{
-			Path:         file.Path,
-			Name:         file.Name,
-			Extension:    file.Extension,
-			Directory:    file.Directory,
-			Size:         file.Size,
-			ContentType:  file.ContentType,
-			LastModified: file.LastModified.UTC().Format(time.RFC3339),
-		}
-	}
-
-	sort.Slice(apiFiles, func(i, j int) bool {
-		fileI := apiFiles[i]
-		fileJ := apiFiles[j]
-
-		if fileI.Directory && !fileJ.Directory {
-			return true
-		}
-
-		return strings.Compare(fileI.Path, fileJ.Path) < 0
-	})
-
-	parentPath := v1.FilePathToParentPath(req.Path)
-
-	return &api.ListFilesResponse{
-		Files:      apiFiles,
-		ParentPath: parentPath,
-	}, nil
 }
 
 func (s *WorkflowServer) UpdateWorkflowExecutionStatus(ctx context.Context, req *api.UpdateWorkflowExecutionStatusRequest) (*empty.Empty, error) {

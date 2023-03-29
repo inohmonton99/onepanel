@@ -3,7 +3,7 @@
   "info": {
     "title": "Onepanel",
     "description": "Onepanel API",
-    "version": "0.22.0",
+    "version": "1.0.2",
     "contact": {
       "name": "Onepanel project",
       "url": "https://github.com/onepanelio/core"
@@ -22,6 +22,36 @@
     "application/octet-stream"
   ],
   "paths": {
+    "/apis/v1beta/service/{name}": {
+      "get": {
+        "operationId": "HasService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/HasServiceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ServiceService"
+        ]
+      }
+    },
     "/apis/v1beta/{namespace}/field/workflow_executions/{fieldName}": {
       "get": {
         "operationId": "ListWorkflowExecutionsField",
@@ -647,6 +677,200 @@
         ]
       }
     },
+    "/apis/v1beta1/{namespace}/files/list/{path}": {
+      "get": {
+        "operationId": "ListFiles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ListFilesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/apis/v1beta1/{namespace}/files/presigned-url/{key}": {
+      "get": {
+        "operationId": "GetObjectDownloadPresignedURL",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/GetPresignedUrlResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/apis/v1beta1/{namespace}/inferenceservice": {
+      "post": {
+        "operationId": "CreateInferenceService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/GetInferenceServiceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateInferenceServiceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InferenceService"
+        ]
+      }
+    },
+    "/apis/v1beta1/{namespace}/inferenceservice/{name}": {
+      "get": {
+        "operationId": "GetInferenceService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/GetInferenceServiceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InferenceService"
+        ]
+      },
+      "delete": {
+        "operationId": "DeleteInferenceService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InferenceService"
+        ]
+      }
+    },
     "/apis/v1beta1/{namespace}/secrets": {
       "get": {
         "operationId": "ListSecrets",
@@ -1245,48 +1469,6 @@
         ]
       }
     },
-    "/apis/v1beta1/{namespace}/workflow_executions/{uid}/artifacts/{key}": {
-      "get": {
-        "operationId": "GetArtifact",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/ArtifactResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/google.rpc.Status"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "namespace",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "uid",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "key",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "WorkflowService"
-        ]
-      }
-    },
     "/apis/v1beta1/{namespace}/workflow_executions/{uid}/cron_start_statistics": {
       "post": {
         "operationId": "CronStartWorkflowExecutionStatistic",
@@ -1324,48 +1506,6 @@
             "schema": {
               "$ref": "#/definitions/Statistics"
             }
-          }
-        ],
-        "tags": [
-          "WorkflowService"
-        ]
-      }
-    },
-    "/apis/v1beta1/{namespace}/workflow_executions/{uid}/files/{path}": {
-      "get": {
-        "operationId": "ListFiles",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/ListFilesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/google.rpc.Status"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "namespace",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "uid",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "path",
-            "in": "path",
-            "required": true,
-            "type": "string"
           }
         ],
         "tags": [
@@ -3228,12 +3368,40 @@
         }
       }
     },
-    "ArtifactResponse": {
+    "Container": {
       "type": "object",
       "properties": {
-        "data": {
-          "type": "string",
-          "format": "byte"
+        "image": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "env": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Env"
+          }
+        }
+      }
+    },
+    "CreateInferenceServiceRequest": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "defaultTransformerImage": {
+          "type": "string"
+        },
+        "predictor": {
+          "$ref": "#/definitions/InferenceServicePredictor"
+        },
+        "transformer": {
+          "$ref": "#/definitions/InferenceServiceTransformer"
         }
       }
     },
@@ -3282,6 +3450,9 @@
           "items": {
             "$ref": "#/definitions/KeyValue"
           }
+        },
+        "captureNode": {
+          "type": "boolean"
         }
       }
     },
@@ -3333,6 +3504,17 @@
       "properties": {
         "deleted": {
           "type": "boolean"
+        }
+      }
+    },
+    "Env": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
         }
       }
     },
@@ -3405,6 +3587,23 @@
         }
       }
     },
+    "GetInferenceServiceResponse": {
+      "type": "object",
+      "properties": {
+        "ready": {
+          "type": "boolean"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InferenceServiceCondition"
+          }
+        },
+        "predictUrl": {
+          "type": "string"
+        }
+      }
+    },
     "GetLabelsResponse": {
       "type": "object",
       "properties": {
@@ -3421,6 +3620,18 @@
       "properties": {
         "bucket": {
           "type": "string"
+        }
+      }
+    },
+    "GetPresignedUrlResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -3448,6 +3659,80 @@
       "properties": {
         "stats": {
           "$ref": "#/definitions/WorkspaceStatisticReport"
+        }
+      }
+    },
+    "HasServiceResponse": {
+      "type": "object",
+      "properties": {
+        "hasService": {
+          "type": "boolean"
+        }
+      }
+    },
+    "InferenceServiceCondition": {
+      "type": "object",
+      "properties": {
+        "lastTransitionTime": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "InferenceServicePredictor": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "runtimeVersion": {
+          "type": "string"
+        },
+        "storageUri": {
+          "type": "string"
+        },
+        "nodeSelector": {
+          "type": "string"
+        },
+        "minCpu": {
+          "type": "string"
+        },
+        "minMemory": {
+          "type": "string"
+        },
+        "maxCpu": {
+          "type": "string"
+        },
+        "maxMemory": {
+          "type": "string"
+        }
+      }
+    },
+    "InferenceServiceTransformer": {
+      "type": "object",
+      "properties": {
+        "containers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Container"
+          }
+        },
+        "minCpu": {
+          "type": "string"
+        },
+        "minMemory": {
+          "type": "string"
+        },
+        "maxCpu": {
+          "type": "string"
+        },
+        "maxMemory": {
+          "type": "string"
         }
       }
     },
@@ -3556,6 +3841,22 @@
     "ListFilesResponse": {
       "type": "object",
       "properties": {
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pages": {
+          "type": "integer",
+          "format": "int32"
+        },
         "files": {
           "type": "array",
           "items": {
@@ -3882,6 +4183,9 @@
       "type": "object",
       "properties": {
         "name": {
+          "type": "string"
+        },
+        "sourceName": {
           "type": "string"
         }
       }
